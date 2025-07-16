@@ -1,80 +1,96 @@
--- Interface do usuário
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "ReiGarden 1.0"
-
--- Frame principal
-local mainFrame = Instance.new("Frame", gui)
-mainFrame.Size = UDim2.new(0, 300, 0, 200)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-mainFrame.Active = true
-mainFrame.Draggable = true
-
--- Abas
-local tabButtons = {}
-local tabs = {}
-
-local function createTab(name, index)
-    local button = Instance.new("TextButton", mainFrame)
+-- Função para criar abas reutilizáveis
+local function createTab(name, index, gui)
+    local button = Instance.new("TextButton", gui)
     button.Size = UDim2.new(0, 100, 0, 30)
     button.Position = UDim2.new(0, index * 100, 0, 0)
     button.Text = name
-    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 100)
     button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.FredokaOne
+    button.TextScaled = true
 
-    local frame = Instance.new("Frame", mainFrame)
-    frame.Size = UDim2.new(1, 0, 1, -30)
-    frame.Position = UDim2.new(0, 0, 0, 30)
-    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    frame.Visible = index == 0
+    local tabFrame = Instance.new("Frame", gui)
+    tabFrame.Size = UDim2.new(1, 0, 1, -30)
+    tabFrame.Position = UDim2.new(0, 0, 0, 30)
+    tabFrame.BackgroundTransparency = 1
+    tabFrame.Visible = index == 0
 
     button.MouseButton1Click:Connect(function()
-        for i, f in pairs(tabs) do
-            f.Visible = false
+        for _, tab in pairs(gui:GetChildren()) do
+            if tab:IsA("Frame") and tab ~= tabFrame then
+                tab.Visible = false
+            end
         end
-        frame.Visible = true
+        tabFrame.Visible = true
     end)
 
-    tabButtons[name] = button
-    tabs[name] = frame
+    return tabFrame
 end
 
--- Aba Main
-createTab("Main", 0)
-local label = Instance.new("TextLabel", tabs["Main"])
-label.Size = UDim2.new(1, 0, 0, 50)
-label.Position = UDim2.new(0, 0, 0, 0)
-label.Text = "Criador: ReiMobBR"
-label.TextColor3 = Color3.new(1, 1, 1)
-label.BackgroundTransparency = 1
-label.Font = Enum.Font.SourceSansBold
-label.TextScaled = true
+-- Criação da aba Farm
+local farmTab = createTab("Farm", 2, mainFrame)
 
--- Aba AFK com auto pulo
-createTab("AFK", 1)
-local jumping = false
+-- Título
+local farmTitle = Instance.new("TextLabel", farmTab)
+farmTitle.Size = UDim2.new(1, 0, 0, 30)
+farmTitle.Position = UDim2.new(0, 0, 0, 0)
+farmTitle.Text = "🌱 Loja de Sementes"
+farmTitle.TextColor3 = Color3.new(1, 1, 1)
+farmTitle.Font = Enum.Font.FredokaOne
+farmTitle.TextScaled = true
+farmTitle.BackgroundTransparency = 1
 
-local afkButton = Instance.new("TextButton", tabs["AFK"])
-afkButton.Size = UDim2.new(0, 200, 0, 50)
-afkButton.Position = UDim2.new(0.5, -100, 0.5, -25)
-afkButton.Text = "Ativar Auto Pulo"
-afkButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-afkButton.TextColor3 = Color3.new(1, 1, 1)
-afkButton.Font = Enum.Font.SourceSansBold
-afkButton.TextScaled = true
+-- Lista de sementes (simulação)
+local seeds = {"Cenoura", "Tomate", "Milho", "Morango", "Girassol"}
+for i, seedName in ipairs(seeds) do
+    local item = Instance.new("TextLabel", farmTab)
+    item.Size = UDim2.new(1, -20, 0, 20)
+    item.Position = UDim2.new(0, 10, 0, 30 + (i - 1) * 25)
+    item.Text = "- " .. seedName
+    item.TextColor3 = Color3.fromRGB(240, 240, 240)
+    item.Font = Enum.Font.FredokaOne
+    item.TextScaled = true
+    item.BackgroundTransparency = 1
+end
 
--- Função de auto pulo
-task.spawn(function()
-    while true do
-        if jumping then
-            player.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-        task.wait(2)
-    end
+-- Botão de ativação de auto compra de sementes
+local autoBuySeeds = false
+local seedButton = Instance.new("TextButton", farmTab)
+seedButton.Size = UDim2.new(0, 250, 0, 40)
+seedButton.Position = UDim2.new(0.5, -125, 0, 180)
+seedButton.Text = "Comprar Sementes [OFF]"
+seedButton.BackgroundColor3 = Color3.fromRGB(100, 160, 100)
+seedButton.TextColor3 = Color3.new(1, 1, 1)
+seedButton.Font = Enum.Font.FredokaOne
+seedButton.TextScaled = true
+
+local seedCorner = Instance.new("UICorner", seedButton)
+seedCorner.CornerRadius = UDim.new(0, 12)
+
+seedButton.MouseButton1Click:Connect(function()
+    autoBuySeeds = not autoBuySeeds
+    seedButton.Text = "Comprar Sementes [" .. (autoBuySeeds and "ON" or "OFF") .. "]"
 end)
 
-afkButton.MouseButton1Click:Connect(function()
-    jumping = not jumping
-    afkButton.Text = jumping and "Desativar Auto Pulo" or "Ativar Auto Pulo"
+-- Botões adicionais para Gear e Pet
+local autoBuyGear = false
+local gearButton = seedButton:Clone()
+gearButton.Parent = farmTab
+gearButton.Position = UDim2.new(0.5, -125, 0, 225)
+gearButton.Text = "Comprar Gear [OFF]"
+
+gearButton.MouseButton1Click:Connect(function()
+    autoBuyGear = not autoBuyGear
+    gearButton.Text = "Comprar Gear [" .. (autoBuyGear and "ON" or "OFF") .. "]"
+end)
+
+local autoBuyPet = false
+local petButton = seedButton:Clone()
+petButton.Parent = farmTab
+petButton.Position = UDim2.new(0.5, -125, 0, 270)
+petButton.Text = "Comprar Pet [OFF]"
+
+petButton.MouseButton1Click:Connect(function()
+    autoBuyPet = not autoBuyPet
+    petButton.Text = "Comprar Pet [" .. (autoBuyPet and "ON" or "OFF") .. "]"
 end)
