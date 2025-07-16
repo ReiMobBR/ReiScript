@@ -1,17 +1,18 @@
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Interface principal
+-- GUI Principal
 local screenGui = Instance.new("ScreenGui", playerGui)
-screenGui.Name = "ReiPulo"
+screenGui.Name = "TabbedMenu"
 
--- Criação das abas
+-- Menu de abas
 local tabFrame = Instance.new("Frame", screenGui)
 tabFrame.Size = UDim2.new(0, 300, 0, 200)
 tabFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
 tabFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+tabFrame.Visible = true
 
--- Botões de troca de abas
+-- Botões das abas
 local mainTabButton = Instance.new("TextButton", tabFrame)
 mainTabButton.Size = UDim2.new(0, 100, 0, 30)
 mainTabButton.Position = UDim2.new(0, 0, 0, 0)
@@ -22,7 +23,7 @@ afkTabButton.Size = UDim2.new(0, 100, 0, 30)
 afkTabButton.Position = UDim2.new(0, 100, 0, 0)
 afkTabButton.Text = "AFK"
 
--- Aba Main
+-- Conteúdo aba Main
 local mainTab = Instance.new("Frame", tabFrame)
 mainTab.Size = UDim2.new(1, 0, 1, -30)
 mainTab.Position = UDim2.new(0, 0, 0, 30)
@@ -36,7 +37,7 @@ creatorLabel.BackgroundTransparency = 1
 creatorLabel.TextScaled = true
 creatorLabel.TextColor3 = Color3.new(1, 1, 1)
 
--- Aba AFK
+-- Conteúdo aba AFK
 local afkTab = Instance.new("Frame", tabFrame)
 afkTab.Size = UDim2.new(1, 0, 1, -30)
 afkTab.Position = UDim2.new(0, 0, 0, 30)
@@ -53,10 +54,15 @@ toggleButton.MouseButton1Click:Connect(function()
     autoJumpEnabled = not autoJumpEnabled
     toggleButton.Text = "Auto Pulo: " .. (autoJumpEnabled and "ON" or "OFF")
 
-    while autoJumpEnabled do
-        wait(2)
-        player.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-    end
+    spawn(function()
+        while autoJumpEnabled do
+            wait(2)
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end)
 end)
 
 -- Alternância entre abas
@@ -68,4 +74,19 @@ end)
 afkTabButton.MouseButton1Click:Connect(function()
     mainTab.Visible = false
     afkTab.Visible = true
+end)
+
+-- Botão para abrir/fechar menu
+local toggleMenuButton = Instance.new("ImageButton", screenGui)
+toggleMenuButton.Size = UDim2.new(0, 40, 0, 40)
+toggleMenuButton.Position = UDim2.new(0, 10, 0, 10)
+toggleMenuButton.BackgroundTransparency = 1
+toggleMenuButton.Image = "rbxassetid://6031094678" -- Ícone de menu
+
+local menuVisible = true
+
+toggleMenuButton.MouseButton1Click:Connect(function()
+    menuVisible = not menuVisible
+    tabFrame.Visible = menuVisible
+    toggleMenuButton.Image = menuVisible and "rbxassetid://6031094678" or "rbxassetid://6031094697" -- Menu ou X
 end)
