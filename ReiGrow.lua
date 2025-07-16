@@ -1,8 +1,10 @@
--- ReiGrow Menu v1.0
+-- ReiGrow Menu v1.1
 -- Criado por ReiMobBR
+-- Atualizado com compatibilidade mobile, toggle de menu
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 
@@ -10,21 +12,44 @@ local character = player.Character or player.CharacterAdded:Wait()
 local ReiGrow = {
     MainColor = Color3.fromRGB(25, 150, 50),  -- Verde jardim
     AccentColor = Color3.fromRGB(255, 215, 0), -- Dourado
-    TextColor = Color3.fromRGB(255, 255, 255)  -- Branco
+    TextColor = Color3.fromRGB(255, 255, 255), -- Branco
+    Mobile = false
 }
+
+-- Detectar se está em dispositivo móvel
+if UIS.TouchEnabled and not UIS.KeyboardEnabled and not UIS.MouseEnabled then
+    ReiGrow.Mobile = true
+end
 
 -- Criar a GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ReiGrowMenu"
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
+-- Botão de toggle para abrir/fechar o menu
+local ToggleButton = Instance.new("ImageButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+ToggleButton.Position = UDim2.new(1, -60, 1, -60)
+ToggleButton.AnchorPoint = Vector2.new(1, 1)
+ToggleButton.BackgroundColor3 = ReiGrow.MainColor
+ToggleButton.Image = "rbxassetid://3926305904" -- Ícone de menu
+ToggleButton.ImageRectOffset = Vector2.new(124, 204)
+ToggleButton.ImageRectSize = Vector2.new(36, 36)
+ToggleButton.Parent = ScreenGui
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(1, 0)
+ToggleCorner.Parent = ToggleButton
+
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 350)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -175)
+MainFrame.Size = UDim2.new(0, ReiGrow.Mobile and 350 or 300, 0, ReiGrow.Mobile and 350 or 300) -- Reduzido o tamanho
+MainFrame.Position = UDim2.new(0.5, ReiGrow.Mobile and -175 or -150, 0.5, ReiGrow.Mobile and -175 or -150)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.BackgroundColor3 = ReiGrow.MainColor
 MainFrame.BorderSizePixel = 0
+MainFrame.Visible = false
 MainFrame.Parent = ScreenGui
 
 local Corner = Instance.new("UICorner")
@@ -34,19 +59,36 @@ Corner.Parent = MainFrame
 local Title = Instance.new("TextLabel")
 Title.Name = "Title"
 Title.Text = "ReiGrow"
-Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Size = UDim2.new(1, 0, 0, ReiGrow.Mobile and 50 or 40)
 Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundColor3 = ReiGrow.MainColor
 Title.TextColor3 = ReiGrow.TextColor
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 20
+Title.TextSize = ReiGrow.Mobile and 24 or 20
 Title.BorderSizePixel = 0
 Title.Parent = MainFrame
 
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Text = "X"
+CloseButton.Size = UDim2.new(0, ReiGrow.Mobile and 40 or 30, 0, ReiGrow.Mobile and 40 or 30)
+CloseButton.Position = UDim2.new(1, ReiGrow.Mobile and -45 or -35, 0, 5)
+CloseButton.AnchorPoint = Vector2.new(1, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseButton.TextColor3 = ReiGrow.TextColor
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = ReiGrow.Mobile and 20 or 16
+CloseButton.BorderSizePixel = 0
+CloseButton.Parent = MainFrame
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 4)
+CloseCorner.Parent = CloseButton
+
 local TabButtons = Instance.new("Frame")
 TabButtons.Name = "TabButtons"
-TabButtons.Size = UDim2.new(1, 0, 0, 30)
-TabButtons.Position = UDim2.new(0, 0, 0, 40)
+TabButtons.Size = UDim2.new(1, 0, 0, ReiGrow.Mobile and 40 or 30)
+TabButtons.Position = UDim2.new(0, 0, 0, ReiGrow.Mobile and 55 or 40)
 TabButtons.BackgroundTransparency = 1
 TabButtons.Parent = MainFrame
 
@@ -58,7 +100,7 @@ MainTabButton.Position = UDim2.new(0, 0, 0, 0)
 MainTabButton.BackgroundColor3 = ReiGrow.MainColor
 MainTabButton.TextColor3 = ReiGrow.TextColor
 MainTabButton.Font = Enum.Font.Gotham
-MainTabButton.TextSize = 14
+MainTabButton.TextSize = ReiGrow.Mobile and 18 or 14
 MainTabButton.BorderSizePixel = 0
 MainTabButton.Parent = TabButtons
 
@@ -70,14 +112,14 @@ AFKTabButton.Position = UDim2.new(0.5, 0, 0, 0)
 AFKTabButton.BackgroundColor3 = ReiGrow.MainColor
 AFKTabButton.TextColor3 = ReiGrow.TextColor
 AFKTabButton.Font = Enum.Font.Gotham
-AFKTabButton.TextSize = 14
+AFKTabButton.TextSize = ReiGrow.Mobile and 18 or 14
 AFKTabButton.BorderSizePixel = 0
 AFKTabButton.Parent = TabButtons
 
 local TabContent = Instance.new("Frame")
 TabContent.Name = "TabContent"
-TabContent.Size = UDim2.new(1, -20, 1, -80)
-TabContent.Position = UDim2.new(0, 10, 0, 80)
+TabContent.Size = UDim2.new(1, -20, 1, ReiGrow.Mobile and -100 or -70)
+TabContent.Position = UDim2.new(0, 10, 0, ReiGrow.Mobile and 95 or 70)
 TabContent.BackgroundTransparency = 1
 TabContent.Parent = MainFrame
 
@@ -92,39 +134,28 @@ MainTab.Parent = TabContent
 local CreatorLabel = Instance.new("TextLabel")
 CreatorLabel.Name = "CreatorLabel"
 CreatorLabel.Text = "Criado por: ReiMobBR"
-CreatorLabel.Size = UDim2.new(1, 0, 0, 30)
+CreatorLabel.Size = UDim2.new(1, 0, 0, ReiGrow.Mobile and 40 or 30)
 CreatorLabel.Position = UDim2.new(0, 0, 0, 0)
 CreatorLabel.BackgroundTransparency = 1
 CreatorLabel.TextColor3 = ReiGrow.TextColor
 CreatorLabel.Font = Enum.Font.Gotham
-CreatorLabel.TextSize = 16
+CreatorLabel.TextSize = ReiGrow.Mobile and 20 or 16
 CreatorLabel.Parent = MainTab
 
 local Decoration1 = Instance.new("Frame")
 Decoration1.Name = "Decoration1"
 Decoration1.Size = UDim2.new(1, 0, 0, 2)
-Decoration1.Position = UDim2.new(0, 0, 0, 35)
+Decoration1.Position = UDim2.new(0, 0, 0, ReiGrow.Mobile and 45 or 35)
 Decoration1.BackgroundColor3 = ReiGrow.AccentColor
 Decoration1.BorderSizePixel = 0
 Decoration1.Parent = MainTab
 
-local WelcomeLabel = Instance.new("TextLabel")
-WelcomeLabel.Name = "WelcomeLabel"
-WelcomeLabel.Text = "Bem-vindo ao ReiGrow!"
-WelcomeLabel.Size = UDim2.new(1, 0, 0, 50)
-WelcomeLabel.Position = UDim2.new(0, 0, 0, 40)
-WelcomeLabel.BackgroundTransparency = 1
-WelcomeLabel.TextColor3 = ReiGrow.TextColor
-WelcomeLabel.Font = Enum.Font.GothamBold
-WelcomeLabel.TextSize = 18
-WelcomeLabel.Parent = MainTab
-
 local Decoration2 = Instance.new("ImageLabel")
 Decoration2.Name = "Decoration2"
-Decoration2.Size = UDim2.new(0, 100, 0, 100)
-Decoration2.Position = UDim2.new(0.5, -50, 0.5, -50)
+Decoration2.Size = UDim2.new(0, ReiGrow.Mobile and 120 or 100, 0, ReiGrow.Mobile and 120 or 100)
+Decoration2.Position = UDim2.new(0.5, ReiGrow.Mobile and -60 or -50, 0.5, ReiGrow.Mobile and -60 or -50)
 Decoration2.BackgroundTransparency = 1
-Decoration2.Image = "rbxassetid://6065821980" -- ID de uma imagem de planta (substitua se necessário)
+Decoration2.Image = "rbxassetid://6065821980" -- ID de uma imagem de planta
 Decoration2.Parent = MainTab
 
 -- Conteúdo da aba AFK
@@ -138,24 +169,24 @@ AFKTab.Parent = TabContent
 local AutoJumpLabel = Instance.new("TextLabel")
 AutoJumpLabel.Name = "AutoJumpLabel"
 AutoJumpLabel.Text = "Auto Pulo:"
-AutoJumpLabel.Size = UDim2.new(0.6, 0, 0, 30)
-AutoJumpLabel.Position = UDim2.new(0, 0, 0, 20)
+AutoJumpLabel.Size = UDim2.new(0.6, 0, 0, ReiGrow.Mobile and 40 or 30)
+AutoJumpLabel.Position = UDim2.new(0, 0, 0, ReiGrow.Mobile and 30 or 20)
 AutoJumpLabel.BackgroundTransparency = 1
 AutoJumpLabel.TextColor3 = ReiGrow.TextColor
 AutoJumpLabel.Font = Enum.Font.Gotham
-AutoJumpLabel.TextSize = 16
+AutoJumpLabel.TextSize = ReiGrow.Mobile and 20 or 16
 AutoJumpLabel.TextXAlignment = Enum.TextXAlignment.Left
 AutoJumpLabel.Parent = AFKTab
 
 local AutoJumpToggle = Instance.new("TextButton")
 AutoJumpToggle.Name = "AutoJumpToggle"
 AutoJumpToggle.Text = "OFF"
-AutoJumpToggle.Size = UDim2.new(0.3, 0, 0, 30)
-AutoJumpToggle.Position = UDim2.new(0.65, 0, 0, 20)
+AutoJumpToggle.Size = UDim2.new(0.3, 0, 0, ReiGrow.Mobile and 40 or 30)
+AutoJumpToggle.Position = UDim2.new(0.65, 0, 0, ReiGrow.Mobile and 30 or 20)
 AutoJumpToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 AutoJumpToggle.TextColor3 = ReiGrow.TextColor
 AutoJumpToggle.Font = Enum.Font.GothamBold
-AutoJumpToggle.TextSize = 14
+AutoJumpToggle.TextSize = ReiGrow.Mobile and 18 or 14
 AutoJumpToggle.BorderSizePixel = 0
 AutoJumpToggle.Parent = AFKTab
 
@@ -166,14 +197,23 @@ Corner2.Parent = AutoJumpToggle
 local DescriptionLabel = Instance.new("TextLabel")
 DescriptionLabel.Name = "DescriptionLabel"
 DescriptionLabel.Text = "Ative para pular automaticamente e evitar desconexão por AFK."
-DescriptionLabel.Size = UDim2.new(1, 0, 0, 50)
-DescriptionLabel.Position = UDim2.new(0, 0, 0, 60)
+DescriptionLabel.Size = UDim2.new(1, 0, 0, ReiGrow.Mobile and 80 or 50)
+DescriptionLabel.Position = UDim2.new(0, 0, 0, ReiGrow.Mobile and 80 or 60)
 DescriptionLabel.BackgroundTransparency = 1
 DescriptionLabel.TextColor3 = ReiGrow.TextColor
 DescriptionLabel.Font = Enum.Font.Gotham
-DescriptionLabel.TextSize = 14
+DescriptionLabel.TextSize = ReiGrow.Mobile and 16 or 14
 DescriptionLabel.TextWrapped = true
 DescriptionLabel.Parent = AFKTab
+
+-- Funções de toggle do menu
+local function toggleMenu()
+    MainFrame.Visible = not MainFrame.Visible
+    ToggleButton.Visible = not MainFrame.Visible
+end
+
+ToggleButton.MouseButton1Click:Connect(toggleMenu)
+CloseButton.MouseButton1Click:Connect(toggleMenu)
 
 -- Lógica das abas
 MainTabButton.MouseButton1Click:Connect(function()
@@ -217,11 +257,11 @@ AutoJumpToggle.MouseButton1Click:Connect(function()
         
         -- Loop de pulo automático
         spawn(function()
-            while autoJumpEnabled do
-                if not jumpCooldown then
+            while autoJumpEnabled and RunService.Heartbeat:Wait() do
+                if not jumpCooldown and character:FindFirstChild("Humanoid") then
                     jump()
+                    wait(1.5) -- Intervalo entre pulos
                 end
-                wait(1.5) -- Intervalo entre pulos
             end
         end)
     else
@@ -237,3 +277,25 @@ end)
 
 -- Configuração inicial
 MainTabButton.BackgroundColor3 = ReiGrow.AccentColor
+ToggleButton.Visible = true
+MainFrame.Visible = false
+
+-- Ajustes para mobile
+if ReiGrow.Mobile then
+    -- Tornar botões maiores para touch
+    MainTabButton.TextSize = 18
+    AFKTabButton.TextSize = 18
+    AutoJumpToggle.TextSize = 18
+    
+    -- Adicionar padding para melhor toque
+    local function addTouchPadding(button)
+        local padding = Instance.new("UIPadding")
+        padding.PaddingTop = UDim.new(0, 5)
+        padding.PaddingBottom = UDim.new(0, 5)
+        padding.Parent = button
+    end
+    
+    addTouchPadding(MainTabButton)
+    addTouchPadding(AFKTabButton)
+    addTouchPadding(AutoJumpToggle)
+end
